@@ -3,7 +3,6 @@
 import requests
 from lxml import html
 
-
 uri = 'http://www.pcso.gov.ph/SearchLottoResult.aspx'
 
 html_headers = {
@@ -13,29 +12,31 @@ html_headers = {
 
 
 def get_page():
-   response = requests.get(uri, headers=html_headers)
-   #print(response.text)
-   page = html.fromstring(response.text)
-   print(page)
-   return page
+    """
+     retrieves raw html response using GET on uri and html_headers
+     converts response string to an htmlElement object
+    :return:
+    """
+    response = requests.get(uri, headers=html_headers)
+    print(response.content)
+    page = html.fromstring(response.content)
+    print(page)
+    return page
+
 
 def extract_viewstate(raw_html):
+    """
+    locates @id="__VIEWSTATE" and returns the __VIEWSTATE value
+    len(viewstate) as of 20181008 is 5680
+    :rtype: htmlElement object
+    """
     viewstate = str(raw_html.xpath('//input[@id="__VIEWSTATE"]/@value'))
     print(viewstate)
     print(type(viewstate))
     print(len(viewstate))
     return viewstate
 
-def
-
 
 raw_html = get_page()
 
 extract_viewstate(raw_html)
-
-
-
-
-
-
-
