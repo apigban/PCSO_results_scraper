@@ -83,15 +83,27 @@ def post_formfield(response):
     return post_html
 
 
-uri = 'http://www.pcso.gov.ph/SearchLottoResult.aspx'
+def file_write(line):
+    """
+    appends line of type str to lotto.full file
+    list is first converted to a string
+    line is stripped of 1st and last characters "[" and "]"
+    """
+    with open('lotto.full', 'a') as write_file:
+        write_file.write(str(line)[1:-1])
+        write_file.write('\n')
 
-html_headers = {
-    'HTTP_USER_AGENT': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',
-    'HTTP_ACCEPT': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Referer': 'http://www.pcso.gov.ph/SearchLottoResult.aspx'
-}
+
 
 if __name__ == "__main__":
+
+    uri = 'http://www.pcso.gov.ph/SearchLottoResult.aspx'
+
+    html_headers = {
+        'HTTP_USER_AGENT': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',
+        'HTTP_ACCEPT': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Referer': 'http://www.pcso.gov.ph/SearchLottoResult.aspx'
+    }
 
     web_session = requests.Session()
 
@@ -108,5 +120,6 @@ if __name__ == "__main__":
     for row in rows:
         parsed_table.append([c.text for c in row.getchildren()])
 
-    for row in parsed_table:
-        print(row)
+    #for row in parsed_table:
+    #    file_write(row)
+    #    print(row)
