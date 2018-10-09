@@ -2,6 +2,8 @@
 
 import requests
 from lxml import html
+from lxml.html import parse
+
 
 def get_page():
     """
@@ -10,9 +12,9 @@ def get_page():
     :return:
     """
     response = web_session.get(uri, headers=html_headers)
-    #print(response.cookie)
+    # print(response.cookie)
     page = html.fromstring(response.content)
-    #print(type(response))
+    # print(type(response))
 
     return page, response
 
@@ -38,18 +40,23 @@ def extract_state(raw_html):
     event_target = str(raw_html.xpath('//input[@id="__EVENTTARGET"]/@value'))
     event_argument = str(raw_html.xpath('//input[@id="__EVENTARGUMENT"]/@value'))
 
-    #print(event_validation, event_target, event_argument)
-    #print(type(viewstate))
-    #print(len(event_validation), len(event_target), len(event_argument))
+    # print(event_validation, event_target, event_argument)
+    # print(type(viewstate))
+    # print(len(event_validation), len(event_target), len(event_argument))
 
-    #print(viewstate_gen)
-    #print(type(viewstate_gen))
-    #print(len(viewstate_gen))
+    # print(viewstate_gen)
+    # print(type(viewstate_gen))
+    # print(len(viewstate_gen))
 
     return viewstate, viewstate_gen, event_validation, event_target, event_argument
 
-def post_formfield(response):
 
+def post_formfield(response):
+    """
+    creates formfield dictionary containing form data to be sent by POST method
+    POSTs the data to the asp.net form
+    :rtype: requests.Response object
+    """
     formfield = {
         '__VIEWSTATE': viewstate,
         '__VIEWSTATEGENERATOR': viewstate_gen,
@@ -62,17 +69,19 @@ def post_formfield(response):
         'ctl00$ctl00$cphContainer$cpContent$ddlEndMonth': 'October',
         'ctl00$ctl00$cphContainer$cpContent$ddlEndDay': '8',
         'ctl00$ctl00$cphContainer$cpContent$ddlEndYear': '2018',
-        'ctl00$ctl00$cphContainer$cpContent$ddlSelectGame': '0',        #value=0 is ALL GAMES
+        'ctl00$ctl00$cphContainer$cpContent$ddlSelectGame': '0',  # value=0 is ALL GAMES
         'ctl00$ctl00$cphContainer$cpContent$btnSearch': 'Search+Lotto'
     }
 
     post_html = web_session.post(uri, headers=html_headers, data=formfield)
 
-    #print(formfield)
-    #print(viewstate,'\n', viewstate_gen,'\n', event_validation,'\n', event_target,'\n', event_argument)
-    #print(event_validation)
-    #print(post_html.content)
-    print(post_html)
+    # print(formfield)
+    # print(viewstate,'\n', viewstate_gen,'\n', event_validation,'\n', event_target,'\n', event_argument)
+    # print(event_validation)
+    # print(post_html.content)
+    print(type(post_html))
+    return post_html
+
 
 uri = 'http://www.pcso.gov.ph/SearchLottoResult.aspx'
 
@@ -88,5 +97,14 @@ raw_html, response = get_page()
 
 viewstate, viewstate_gen, event_validation, event_target, event_argument = extract_state(raw_html)
 
-post_formfield(response)
-#print(viewstate,viewstate_gen)
+post_html = html.parse(post_formfield(response.content))
+
+rows = post_html.xpath('//table[@id="cphContainer_cpContent_GridView1"]')[0].findall('tr')
+
+parsed_table = list()
+
+for row in rows:
+    parsed_table.append([c.text_content for c in row.getchildren()])
+
+for row in parsed_table:
+    print(row)
