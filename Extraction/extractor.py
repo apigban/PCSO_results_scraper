@@ -91,20 +91,22 @@ html_headers = {
     'Referer': 'http://www.pcso.gov.ph/SearchLottoResult.aspx'
 }
 
-web_session = requests.Session()
+if __name__ == "__main__":
 
-raw_html, response = get_page()
+    web_session = requests.Session()
 
-viewstate, viewstate_gen, event_validation, event_target, event_argument = extract_state(raw_html)
+    raw_html, response = get_page()
 
-post_html = html.parse(post_formfield(response.content))
+    viewstate, viewstate_gen, event_validation, event_target, event_argument = extract_state(raw_html)
 
-rows = post_html.xpath('//table[@id="cphContainer_cpContent_GridView1"]')[0].findall('tr')
+    full_html = html.fromstring(post_formfield(response).content)
 
-parsed_table = list()
+    rows = full_html.xpath('//table[@id="cphContainer_cpContent_GridView1"]')[0].findall('tr')
 
-for row in rows:
-    parsed_table.append([c.text_content for c in row.getchildren()])
+    parsed_table = list()
 
-for row in parsed_table:
-    print(row)
+    for row in rows:
+        parsed_table.append([c.text for c in row.getchildren()])
+
+    for row in parsed_table:
+        print(row)
