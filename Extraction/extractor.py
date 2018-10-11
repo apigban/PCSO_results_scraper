@@ -2,7 +2,8 @@
 
 import requests
 from lxml import html
-from lxml.html import parse
+# from Extraction import db_writer
+from Extraction import db_writer_postgres
 
 
 def get_page():
@@ -12,9 +13,7 @@ def get_page():
     :return:
     """
     response = web_session.get(uri, headers=html_headers)
-    # print(response.cookie)
     page = html.fromstring(response.content)
-    # print(type(response))
 
     return page, response
 
@@ -39,14 +38,6 @@ def extract_state(raw_html):
     event_validation = event_validation[2:-2]
     event_target = str(raw_html.xpath('//input[@id="__EVENTTARGET"]/@value'))
     event_argument = str(raw_html.xpath('//input[@id="__EVENTARGUMENT"]/@value'))
-
-    # print(event_validation, event_target, event_argument)
-    # print(type(viewstate))
-    # print(len(event_validation), len(event_target), len(event_argument))
-
-    # print(viewstate_gen)
-    # print(type(viewstate_gen))
-    # print(len(viewstate_gen))
 
     return viewstate, viewstate_gen, event_validation, event_target, event_argument
 
@@ -74,12 +65,6 @@ def post_formfield(response):
     }
 
     post_html = web_session.post(uri, headers=html_headers, data=formfield)
-
-    # print(formfield)
-    # print(viewstate,'\n', viewstate_gen,'\n', event_validation,'\n', event_target,'\n', event_argument)
-    # print(event_validation)
-    # print(post_html.content)
-    print(type(post_html))
     return post_html
 
 
@@ -92,7 +77,6 @@ def file_write(line):
     with open('lotto.full', 'a') as write_file:
         write_file.write(str(line)[1:-1])
         write_file.write('\n')
-
 
 
 if __name__ == "__main__":
@@ -120,6 +104,10 @@ if __name__ == "__main__":
     for row in rows:
         parsed_table.append([c.text for c in row.getchildren()])
 
-    #for row in parsed_table:
+    # db_writer.db_commit(parsed_table)
+    db_writer_postgres.db_commit(parsed_table)
+
+    # ONLY USE FOR writing to file
+    # for row in parsed_table:
     #    file_write(row)
     #    print(row)

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3.7
 
 import re
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from datetime import datetime as dt
+from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relation
 from Extraction import db_config
@@ -16,7 +17,7 @@ class Combination(Base):
     __tablename__ = 'lotto'
 
     id = Column('id', Integer, primary_key=True)
-    datedrawn = Column('date', String)
+    datedrawn = Column('date', Date)
     game = Column('game', String)
     game_result = Column('result', String)
     jackpot = Column('jackpot', Integer)
@@ -40,9 +41,8 @@ def db_commit(parsed_table):
     for element in range(1, len(parsed_table)):
         draw = Combination()
         session = Session()
-        # print(type(parsed_table[element][0]))
 
-        draw.datedrawn = parsed_table[element][2]
+        draw.datedrawn = dt.strftime(dt.strptime(parsed_table[element][2], "%m/%d/%Y"), "%Y-%m-%d")
         draw.game = parsed_table[element][0]
         draw.game_result = parsed_table[element][1]
         draw.jackpot = int(float(re.sub('[, ]', '', parsed_table[element][3])))
