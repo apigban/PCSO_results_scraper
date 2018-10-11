@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.7
 
+import re
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relation
@@ -36,12 +37,11 @@ def db_commit(parsed_table):
     for element in range(1, len(parsed_table)):
         draw = Combination()
         session = Session()
-        # print(type(parsed_table[element][0]))
 
         draw.datedrawn = parsed_table[element][2]
         draw.game = parsed_table[element][0]
         draw.game_result = parsed_table[element][1]
-        draw.jackpot = int(float(parsed_table[element][3]))
+        draw.jackpot = int(float(re.sub('[, ]', '', parsed_table[element][3])))
         draw.winners = int(parsed_table[element][4])
 
         session.add(draw)
