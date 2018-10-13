@@ -98,11 +98,12 @@ if __name__ == "__main__":
     viewstate, viewstate_gen, event_validation, event_target, event_argument = extract_state(raw_html)
     full_html = html.fromstring(post_formfield(response).content)
 
+    # print(full_html.text_content())
     rows = full_html.xpath('//table[@id="cphContainer_cpContent_GridView1"]')[0].findall('tr')
 
     parsed_table = list()
-
-    for row in reversed(rows):
+    # print(parsed_table)
+    for row in reversed(rows[1:]):
         parsed_table.append([c.text for c in row.getchildren()])
 
     # SQLite

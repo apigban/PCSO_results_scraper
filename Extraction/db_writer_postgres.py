@@ -86,23 +86,25 @@ def db_commit(parsed_table):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    try:
-        for element in range(1, len(parsed_table)):
-            draw = Combination()
+    #    try:
+    for element in range(1, len(parsed_table)):
+        draw = Combination()
 
-            draw.datedrawn = dt.strftime(dt.strptime(parsed_table[element][2], "%m/%d/%Y"), "%Y-%m-%d")
-            draw.game = parsed_table[element][0]
-            draw.game_result = parsed_table[element][1]
-            draw.jackpot = int(float(re.sub('[, ]', '', parsed_table[element][3])))
-            draw.winners = int(parsed_table[element][4])
+        draw.datedrawn = dt.strftime(dt.strptime(parsed_table[element][2], "%m/%d/%Y"), "%Y-%m-%d")
+        draw.game = parsed_table[element][0]
+        draw.game_result = parsed_table[element][1]
+        draw.jackpot = int(float(re.sub('[, ]', '', parsed_table[element][3])))
+        draw.winners = int(parsed_table[element][4])
 
-            session.add(draw)
-            session.commit()
+        session.add(draw)
+        session.commit()
 
-            session.close()
-    except ValueError as wrong_datatype:
-        print(f'{wrong_datatype}')
-        pass
+        session.close()
+
+
+#    except ValueError as wrong_datatype:
+#        print(f'{wrong_datatype}')
+#        pass
 
 if __name__ == '__main__':
     print('Module Executed Independently.')
