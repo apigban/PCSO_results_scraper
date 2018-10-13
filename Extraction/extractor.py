@@ -2,8 +2,8 @@
 
 import requests
 from lxml import html
-# from Extraction import db_writer
 from Extraction import db_writer_postgres
+import calendar
 
 
 def get_page():
@@ -48,18 +48,20 @@ def post_formfield(response):
     POSTs the data to the asp.net form
     :rtype: requests.Response object
     """
+    start_date, end_date = db_writer_postgres.db_update_from_last_entry()
+
     formfield = {
         '__VIEWSTATE': viewstate,
         '__VIEWSTATEGENERATOR': viewstate_gen,
         '__EVENTTARGET': '',
         '__EVENTARGUMENT': '',
         '__EVENTVALIDATION': event_validation,
-        'ctl00$ctl00$cphContainer$cpContent$ddlStartMonth': 'January',
-        'ctl00$ctl00$cphContainer$cpContent$ddlStartDate': '1',
-        'ctl00$ctl00$cphContainer$cpContent$ddlStartYear': '2008',
-        'ctl00$ctl00$cphContainer$cpContent$ddlEndMonth': 'October',
-        'ctl00$ctl00$cphContainer$cpContent$ddlEndDay': '8',
-        'ctl00$ctl00$cphContainer$cpContent$ddlEndYear': '2018',
+        'ctl00$ctl00$cphContainer$cpContent$ddlStartMonth': calendar.month_name[start_date.month],
+        'ctl00$ctl00$cphContainer$cpContent$ddlStartDate': start_date.day,
+        'ctl00$ctl00$cphContainer$cpContent$ddlStartYear': start_date.year,
+        'ctl00$ctl00$cphContainer$cpContent$ddlEndMonth': calendar.month_name[end_date.month],
+        'ctl00$ctl00$cphContainer$cpContent$ddlEndDay': end_date.day,
+        'ctl00$ctl00$cphContainer$cpContent$ddlEndYear': end_date.year,
         'ctl00$ctl00$cphContainer$cpContent$ddlSelectGame': '0',  # value=0 is ALL GAMES
         'ctl00$ctl00$cphContainer$cpContent$btnSearch': 'Search+Lotto'
     }
@@ -94,18 +96,25 @@ if __name__ == "__main__":
     raw_html, response = get_page()
 
     viewstate, viewstate_gen, event_validation, event_target, event_argument = extract_state(raw_html)
-
     full_html = html.fromstring(post_formfield(response).content)
 
     rows = full_html.xpath('//table[@id="cphContainer_cpContent_GridView1"]')[0].findall('tr')
 
     parsed_table = list()
 
-    for row in rows:
+    for row in reversed(rows):
         parsed_table.append([c.text for c in row.getchildren()])
 
+    # SQLite
+    # CREATE  DB and DUMP rows
     # db_writer.db_commit(parsed_table)
+
+    # Postgresql
+    # CREATE DB and DUMP rows
     db_writer_postgres.db_commit(parsed_table)
+
+    # RETURN LATEST ENTRY
+    # db_writer_postgres.db_check_last_update()
 
     # ONLY USE FOR writing to file
     # for row in parsed_table:
