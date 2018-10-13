@@ -57,7 +57,7 @@ def db_update_from_last_entry():
     end_date = None
 
     if db_recent_entry_date == None:
-        print('\nNo Entry on Table')
+        print('\nNo Entry on Table. Dumping full table to DB')
         # start_date = dt.strftime(start_date, '%B/%A/%Y')
         end_date = date_now
         return start_date, end_date
