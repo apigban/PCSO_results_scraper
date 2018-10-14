@@ -42,11 +42,12 @@ def db_check_last_update():
     Session = sessionmaker(bind=engine)
     session = Session()
 
+
     try:
-        latest_db_entry = session.query(Combination).first()
+        latest_db_entry = session.query(Combination).order_by(Combination.id.desc()).first()
         return latest_db_entry.datedrawn
-    except:
-        TypeError
+    except TypeError as error_type:
+        print('f{error_type}')
         latest_db_entry = None
     return latest_db_entry
 
