@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.7
 
 import re
+import Log.log as log
 from datetime import datetime as dt
 
 from sqlalchemy import create_engine, Column, Integer, String, Date
@@ -10,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 from Extraction import db_config
 
+db_logger = log.get_logger(__name__)
 
 date_now = dt.now().date()
 
@@ -37,13 +39,12 @@ class Combination(Base):
         self.jackpot = jackpot
         self.winners = winners
         self.composite = composite
-        print(f'A {__name__} object has been created')
+        db_logger.info(f'An {__name__} object has been created')
 
-    def __repr__(self):
-        return f'{object.__repr__(self)}, ({str(self)})'
 
 
 Base.metadata.create_all(bind=engine)
+db_logger.info(f'Table {Combination.__tablename__} created on {db_config.host} using the {db_config.database} database')
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -58,25 +59,23 @@ def db_check_last_update():
         latest_db_entry = session.query(Combination).order_by(Combination.id.desc()).first()
         return latest_db_entry
     except SQLAlchemyError as error_sql:
-        print(error_sql)
+        db_logger.error(f'{error_sql}')
         latest_db_entry = None
     return latest_db_entry
 
 
 def db_update_from_last_entry():
     start_date = dt.strptime('2008-01-01', '%Y-%m-%d')
-    end_date = None
-    # print(db_recent_entry_date)
-    # db_recent_entry_date
 
-    if db_recent_entry_date == None:
-        print('\nNo Entry on Table. Dumping all rows to DB')
-        # start_date = dt.strftime(start_date, '%B/%A/%Y')
+    if db_recent_entry_date is None:
+        db_logger.info(f'No Entry on table {Combination.__tablename__}.')
+
         end_date = date_now
         return start_date, end_date
 
     elif db_recent_entry_date.datedrawn < date_now:
-        print(f'\nSome entries are missing, last entry is {db_recent_entry_date.datedrawn}. TODAY is {date_now}')
+        db_logger.info(f'Continuing read from {db_recent_entry_date.datedrawn}. TODAY is {date_now}.')
+
         start_date = db_recent_entry_date.datedrawn
         end_date = date_now
         return start_date, end_date
@@ -131,15 +130,16 @@ def db_commit(parsed_table):
         recent_composite_list = fetch_recent_composite()
 
         if draw.composite in recent_composite_list:
-            print(f'Game {draw.game} drawn on {draw.datedrawn} with combination {draw.game_result} is already in DB.')
-
+            db_logger.warn(
+                f'DUPLICATE ENTRY:    Game {draw.game} drawn on {draw.datedrawn} with combination {draw.game_result} is already in DB.')
         else:
-            print(
-                f'Game {draw.game} drawn on {draw.datedrawn} with combination {draw.game_result} is a NEW RECORD.\n Committing draw object to DB...')
+            db_logger.info(
+                f'NEW ENTRY: Game {draw.game} drawn on {draw.datedrawn} with combination {draw.game_result} is a NEW RECORD. Committing draw object to DB...')
             session.add(draw)
             session.commit()
+            db_logger.info(f'Commit Done. Draw date:  {draw.datedrawn} Draw game: {draw.game}')
             session.close()
-            print(f'Commit Success. Session Closed.')
+            db_logger.info(f'Session Closed')
 
 
 db_recent_entry_date = db_check_last_update()
