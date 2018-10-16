@@ -4,7 +4,9 @@ import requests
 from lxml import html
 from Extraction import db_writer_postgres
 import calendar
+import Log.log as log
 
+scraper_logger = log.get_logger(__name__)
 
 def get_page():
     """
@@ -12,10 +14,10 @@ def get_page():
      converts response string to an htmlElement object
     :return:
     """
-    response = web_session.get(uri, headers=html_headers)
-    page = html.fromstring(response.content)
+    pcso_response = web_session.get(uri, headers=html_headers)
+    pcso_page = html.fromstring(pcso_response.content)
 
-    return page, response
+    return pcso_page, pcso_response
 
 
 def extract_state(raw_html):
@@ -80,6 +82,7 @@ def file_write(line):
         write_file.write(str(line)[1:-1])
         write_file.write('\n')
 
+    scraper_logger.info(f'finished writing to {write_file}')
 
 if __name__ == "__main__":
 

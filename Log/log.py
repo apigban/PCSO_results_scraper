@@ -14,8 +14,6 @@ pattern = r'(?:.*)/(.*)(?:\.py)'
 
 caller_name = re.match(pattern, caller_name_string)
 
-print(f'regex result: {caller_name.group(1)}')
-
 FORMATTER = logging.Formatter('%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 LOG_FILE = f'log/{caller_name.group(1)}_{dt.now().date()}.log'
 
