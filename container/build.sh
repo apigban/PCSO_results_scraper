@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+
+set -xe
+
+containerID=$(buildah from python:3.8.2)
+newImageName="test-image"
+
+buildah config --label maintainer="Alain Igban <apigban@gmail.com>" $containerID
+
+buildah run $containerID groupadd pythonsvc
+buildah run $containerID useradd -g pythonsvc -m pythonsvc
+buildah config --user pythonsvc:pythonsvc $containerID 
+buildah config --workingdir /home/pythonsvc $containerID  
+
+# Copy repo to container
+buildah copy --chown pythonsvc:pythonsvc $containerID ../
+
+# Set entrypoint
+buildah config --entrypoint /home/pythonsvc/container/entrypoint.sh $containerID
+
+# Save the container as an image
+buildah commit $containerID $newImageName
