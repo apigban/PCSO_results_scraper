@@ -2,7 +2,7 @@
 
 import requests
 from lxml import html
-from Extraction import db_writer_postgres
+from Extraction import db_writer_sqlite
 import calendar
 import Log.log as log
 
