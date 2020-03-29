@@ -4,7 +4,7 @@
 set -xe
 
 containerID=$(buildah from python:3.8.2)
-newImageName="test-image"
+newImageName="devtool"
 
 buildah config --label maintainer="Alain Igban <apigban@gmail.com>" $containerID
 
@@ -14,7 +14,9 @@ buildah config --user pythonsvc:pythonsvc $containerID
 buildah config --workingdir /home/pythonsvc $containerID  
 
 # Install python dependencies
-buildah run $containerID pip3 install requests sqlalchemy lxml
+#buildah run $containerID pip3 install requests sqlalchemy lxml
+buildah run $containerID pip install poetry
+
 
 # Copy repo to container
 # buildah copy --chown pythonsvc:pythonsvc $containerID ../
