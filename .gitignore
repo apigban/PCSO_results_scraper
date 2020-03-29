@@ -1,2 +1,5 @@
 scratch.py
 .bash_history
+.cache
+.idea
+.local
